@@ -1,6 +1,7 @@
 ---
 name: react-best-practices
 description: Performance rules for React and Next.js — request waterfalls, bundle size, server-side cost, client data fetching, re-render churn, rendering/paint cost, JS hot paths. Use when writing or refactoring React components, reviewing a React PR for performance, diagnosing slow page loads or janky interactions, or deciding where to put Suspense, memo, dynamic imports, or a server/client boundary.
+disable-model-invocation: true
 ---
 
 # React Best Practices

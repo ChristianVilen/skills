@@ -12,7 +12,46 @@ Above all, this skill should push the reviewer to be **ambitious** about code st
 
 ## Scope
 
-The review target may be passed as an argument: a branch, a commit, a range (`a..b`), or a PR number. If no argument is given, review the current branch's changes against its merge base with `main`/`master`, including uncommitted working-tree changes. Resolve the scope first and state it in the report header.
+The review target may be passed as an argument: a branch, a commit, a range (`a..b`), or a PR number. If no argument is given, review the changes on the current branch (or the detached `HEAD`, common in a review worktree) against its merge base with `origin/main`/`origin/master`, including uncommitted working-tree changes. Use the local `main`/`master` only when there is no remote-tracking branch: the local one is often out of date, for example in a worktree, and then the range picks up commits that are already on main. Resolve the scope first and state it in the report header.
+
+### Ownership
+
+Find out who owns the reviewed work before you review it. Use read-only
+commands only. Do not infer ownership from a local checkout, repository
+access, or permission to push.
+
+1. **A PR decides it on its own.** If the target is a PR number, use that PR.
+   For the current branch, run `gh pr view --json author,state,url` with no
+   argument, and use the result only when its state is `OPEN`: a branch name
+   can also match an old merged or closed PR. With a detached `HEAD`, run
+   `gh pr list --search "$(git rev-parse HEAD)" --state open --json author,url`.
+   Compare `author.login` with `gh api --hostname <pr-host> user --jq .login`.
+   When there is no PR, or `gh` is not available, go to step 2.
+2. **Commits.** Compare each author email in the review range
+   (`git log --format=%ae <range>`) with `git config user.email`. Also accept
+   `<id>+<login>@users.noreply.github.com` when `<login>` is the user's GitHub
+   login. This works the same for a branch, a single commit, or an `a..b`
+   range.
+3. **Uncommitted changes** (staged or working tree) are the user's. Nobody
+   else made them on this machine.
+
+Without a PR, combine steps 2 and 3: every commit and uncommitted change
+is the user's gives **yours**; none of them gives **someone else's**; a mix
+gives **unknown**.
+
+If the user names their GitHub account, use it in place of the `gh` login in
+the checks. If the user says whose work this is, that decides ownership, and
+the checks do not matter.
+
+Record the result in the report header as one of: **Ownership: yours**,
+**Ownership: someone else's (@login)**, or **Ownership: unknown**. For someone
+else's work, show the GitHub login when step 1 returned one, otherwise the
+author email.
+
+Review without changing source files. Only offer to fix findings when the work
+is confirmed to be the user's. For someone else's work, provide review feedback
+and code suggestions, but do not start a fix plan or apply changes. Unknown
+ownership uses the same feedback-only path until the user confirms ownership.
 
 ## Core Prompt
 
@@ -165,7 +204,8 @@ Open with the answer, not the journey:
 
 ```markdown
 ## Verdict: REQUEST CHANGES
-**Change:** Adds legacy-mode support to the ingest pipeline. (scope: `feature/legacy-mode` vs `main`)
+**Change:** Adds legacy-mode support to the ingest pipeline. (scope: `feature/legacy-mode` vs `origin/main`)
+**Ownership:** yours
 The change works but grows `run.ts` past 1k lines and scatters mode checks
 through shared flow. 1 blocker · 2 structural · 2 cleanups.
 ```
@@ -235,30 +275,44 @@ const x = parseApiResponse(data)
 
 ### Next actions (required)
 
-After printing the terminal review, ask the author how to proceed using the
-**AskUserQuestion tool** — never as plain text. One question ("How do you want
-to proceed?"), single-select, with exactly these two options (the tool adds a
-free-text "Other" choice automatically — that is the third option; do not add
-an explicit one):
+After printing the terminal review, ask the user how to proceed using the
+available structured question tool (`AskUserQuestion` or equivalent). If no
+such tool is available, ask in plain text. Use one question ("How do you want
+to proceed?"), single-select, with the options for the ownership result. When
+the tool adds a free-text "Other" choice, do not add an explicit one.
 
-1. **Open HTML report** — generate the browser report (steps below) and open it.
-2. **Fix findings (plan first)** — draft an action plan covering **all**
-   findings: ordered by severity, one entry per finding ID with the concrete
-   change to make. Present the plan and **stop for approval** — apply nothing
-   until the author approves (in full or a subset). After applying, list what
-   changed per finding ID.
+| Ownership      | Options |
+|----------------|---------|
+| yours          | Open HTML report · Fix findings (plan first) |
+| someone else's | Open HTML report · Draft review feedback |
+| unknown        | Open HTML report · Draft review feedback · This is my work: fix findings (plan first) |
 
-If the author picks "Other", follow their free-text instruction.
+- **Open HTML report** — generate the browser report (steps below) and open it.
+- **Fix findings (plan first)** — draft an action plan covering **all**
+  findings: ordered by severity, one entry per finding ID with the concrete
+  change to make. Present the plan and **stop for approval** — apply nothing
+  until the user approves (in full or a subset). After applying, list what
+  changed per finding ID.
+- **Draft review feedback** — prepare concise comments the user can share with
+  the author, using finding IDs and file references. Show the draft in the
+  conversation; do not post it to GitHub without an explicit request.
+- **This is my work: fix findings (plan first)** — picking this counts as the
+  user saying the work is theirs, so ownership is now **yours**. Continue as
+  for **Fix findings (plan first)**.
+
+If the user picks "Other", follow their instruction within the ownership rules
+above. An ambiguous request such as "go ahead" does not establish ownership or
+select the fix workflow.
 
 Exception: if the verdict is APPROVE with zero findings, skip the question and
 fall back to a one-line text offer for the HTML report.
 
 ### Browser report
 
-When the author asks for the browser report:
+When the user asks for the browser report:
 
-1. Copy `report-template.html` (next to this SKILL.md) to a temp/scratch directory — never into the repo. Name it `judo-review-<branch>.html`.
-2. Replace the `__REVIEW_DATA__` placeholder with a JSON blob matching the schema documented at the top of the template: change summary, verdict, rationale, changed files (status added/modified/deleted, size deltas, 1k-threshold flags), an optional architecture module map (touched modules and their dependencies), and findings (id, severity, title, file, lines, problem, fix, optional unified `diff` or before/after code).
+1. Copy `report-template.html` (next to this SKILL.md) to a temp/scratch directory — never into the repo. Name it `judo-review-<branch>.html` (use the short SHA for a detached `HEAD`).
+2. Replace the `__REVIEW_DATA__` placeholder with a JSON blob matching the schema documented at the top of the template: change summary, ownership, verdict, rationale, changed files (status added/modified/deleted, size deltas, 1k-threshold flags), an optional architecture module map (touched modules and their dependencies), and findings (id, severity, title, file, lines, problem, fix, optional unified `diff` or before/after code).
 3. Prefer a real unified `diff` excerpt on a finding when the fix is concrete — the template renders it with red/green line coloring. Use before/after only when a diff would be noisy.
 4. Do not author or restyle HTML — only inject the JSON. Open the file with `open <path>` (macOS) or the platform equivalent.
 

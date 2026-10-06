@@ -14,6 +14,7 @@
       "repo": "my-repo",              // optional
       "date": "2026-07-06",           // required, ISO date of the review
       "scope": "feature/x vs main",   // optional, resolved review scope
+      "ownership": "yours",           // optional — "yours" | "someone else's (@login)" | "unknown"
       "filesReviewed": 6              // optional
     },
     "summary": "One factual sentence: what the change does.",   // required
@@ -412,6 +413,7 @@ function render() {
     <div class="banner ${v.cls}">
       <div class="verdict">${v.label}</div>
       <div class="summary"><strong>Change:</strong> ${esc(DATA.summary)}</div>
+      ${m.ownership ? `<div class="summary"><strong>Ownership:</strong> ${esc(m.ownership)}</div>` : ""}
       <div class="rationale">${esc(DATA.rationale)}</div>
       <div class="counts">${counts}</div>
     </div>

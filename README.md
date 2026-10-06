@@ -61,4 +61,4 @@ Some skills shell out to tools you need to install separately:
 ## Sources
 
 - https://github.com/obra/superpowers
-- https://github.com/mattpocock/skills
+- https://github.com/mattpocock/skills (synced to `4588b32`, 2026-10-05)

@@ -238,7 +238,7 @@ Sort findings by severity, then by this priority within a tier:
 
 ### Finding schema
 
-**Write every finding in plain words.** The reader may not be a native English speaker, and a finding they have to decode is a finding they will skip. Say what the code does and why that is a problem, using the names that are actually in the code and the project's own vocabulary from `CONTEXT.md`. Do not invent a metaphor when a direct description works, and do not reach for a formal word ("canonical", "verbatim", "bespoke", "presumptive", "lockstep") when a common one exists. Repeating a plain word beats swapping in a fancy synonym. Keep a precise technical term when it is genuinely the right one, but explain it in a few plain words the first time it appears.
+**Write every finding in plain words.** The reader may not be a native English speaker, and a finding they have to decode is a finding they will skip. Say what the code does and why that is a problem, using the names that are actually in the code and the project's own vocabulary from `GLOSSARY.md`. Do not invent a metaphor when a direct description works, and do not reach for a formal word ("canonical", "verbatim", "bespoke", "presumptive", "lockstep") when a common one exists. Repeating a plain word beats swapping in a fancy synonym. Keep a precise technical term when it is genuinely the right one, but explain it in a few plain words the first time it appears.
 
 Every finding gets an ID (`B1`, `S1`, `C1`… by tier) so the author can say "apply B1". Every finding cites `file:line` or `file:start-end`. **Line numbers must come from the post-change file you actually read — never guessed from diff hunk headers.** If you haven't verified the line number by reading the file, read it first.
 

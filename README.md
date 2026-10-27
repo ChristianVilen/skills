@@ -25,10 +25,11 @@ ln -sfn "$PWD/agents" ~/.claude/agents
 - `skills/` — one directory per skill, each with a `SKILL.md` carrying YAML frontmatter
   (`name`, `description`).
 - `agents/` — subagent definitions as markdown with frontmatter (`name`, `description`,
-  `tools`, optional `model`).
+  optional `tools`, `model`, `effort`).
 
 Skills marked `disable-model-invocation: true` are user-invoked only, via `/<name>`. They
-won't be offered automatically.
+won't be offered automatically. Skills marked `user-invocable: false` (the `principle-*`
+skills) are hidden from the `/` menu, but the agent can still load them.
 
 ## Adding a skill
 
@@ -57,8 +58,33 @@ Some skills shell out to tools you need to install separately:
 - `git-surgeon` — https://github.com/raine/git-surgeon
 - `workmux` — used by the `workmux`, `worktree`, and `coordinator` skills
 - `playwright-cli` — used by the `playwright-cli` skill
+- `gh` — the GitHub CLI, used by the pstack PR skills and playbooks
+- Bun — used by the `watch-pr` and `orch` scripts in `poteto-mode/scripts/`, which install
+  their own dependencies on first run
+- Node.js — used by the `.mjs` scripts in `poteto-mode` and `reflect`
 
 ## Sources
 
-- https://github.com/obra/superpowers
 - https://github.com/mattpocock/skills (synced to `4588b32`, 2026-10-05)
+- https://github.com/michael-denyer/pstack-claude (synced to `b0bffae`, 2026-10-11). The
+  Claude Code port of [pstack](https://github.com/cursor/plugins/tree/main/pstack).
+- https://github.com/anthropics/claude-plugins-official, `skill-development` from
+  `plugin-dev` (synced to `f359d43`, 2026-10-10)
+
+### pstack local changes
+
+pstack is a plugin, but this repo has it as plain skills. Do these steps again after each
+sync:
+
+- Copy `plugins/pstack/skills/*` into `skills/`, but not
+  `thermo-nuclear-code-quality-review` (`judo-code-review` replaces it). Copy
+  `plugins/pstack/agents/*` and `plugins/pstack/effort-agents/*` into `agents/`.
+- Remove the parts for Copilot, Pi, opencode, Gemini CLI and Prime Agent:
+  `copilot-tools.md`, `pi-tools.md`, `setup-pstack/copilot.md`, `setup-pstack/scripts/`,
+  and the lines that point to them. Keep the Codex parts.
+- Remove the plugin prefix: `pstack:<agent>` becomes `<agent>`, and
+  `plugin-dev:skill-development` becomes `skill-development`.
+- Change "under the installed plugin" script paths to `~/.claude/skills/...`. The
+  `check-plan.mjs` marker `installed plugin` becomes `~/.claude/`.
+- There is no `SessionStart` routing hook. `setup-pstack`, `poteto-help` and
+  `codex-tools.md` say so, and the model sheet has no `session hook` line.

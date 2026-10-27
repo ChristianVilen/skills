@@ -88,3 +88,9 @@ sync:
   `check-plan.mjs` marker `installed plugin` becomes `~/.claude/`.
 - There is no `SessionStart` routing hook. `setup-pstack`, `poteto-help` and
   `codex-tools.md` say so, and the model sheet has no `session hook` line.
+
+After the steps, this command must print nothing:
+
+```sh
+grep -rnE 'installed plugin|<plugin>/|pstack:[a-z]|plugin-dev:[a-z]' skills agents
+```

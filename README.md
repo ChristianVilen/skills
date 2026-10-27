@@ -31,6 +31,9 @@ Skills marked `disable-model-invocation: true` are user-invoked only, via `/<nam
 won't be offered automatically. Skills marked `user-invocable: false` (the `principle-*`
 skills) are hidden from the `/` menu, but the agent can still load them.
 
+To change how a copied skill starts, do not edit its `SKILL.md`. Set `skillOverrides` in
+`~/.claude/settings.json` instead, so the file stays the same as upstream.
+
 ## Adding a skill
 
 ```
@@ -70,6 +73,10 @@ Some skills shell out to tools you need to install separately:
   Claude Code port of [pstack](https://github.com/cursor/plugins/tree/main/pstack).
 - https://github.com/anthropics/claude-plugins-official, `skill-development` from
   `plugin-dev` (synced to `f359d43`, 2026-10-10)
+- https://github.com/raine/workmux, `coordinator`, `merge`, `open-pr`, `rebase`, `workmux`
+  and `worktree` (synced to `23c09d8`, 2026-10-25)
+- https://github.com/raine/git-surgeon, `git-surgeon` (from `813e212`, with local notes
+  about new files)
 
 ### pstack local changes
 

@@ -284,8 +284,11 @@ the tool adds a free-text "Other" choice, do not add an explicit one.
 | Ownership      | Options |
 |----------------|---------|
 | yours          | Open HTML report · Fix findings (plan first) |
-| someone else's | Open HTML report · Draft review feedback |
-| unknown        | Open HTML report · Draft review feedback · This is my work: fix findings (plan first) |
+| someone else's | Open HTML report · Draft review feedback · Create pending GitHub review |
+| unknown        | Open HTML report · Draft review feedback · Create pending GitHub review · This is my work: fix findings (plan first) |
+
+Offer **Create pending GitHub review** only when the review target is an open
+PR. Without one, leave the option out.
 
 - **Open HTML report** — generate the browser report (steps below) and open it.
 - **Fix findings (plan first)** — draft an action plan covering **all**
@@ -296,6 +299,24 @@ the tool adds a free-text "Other" choice, do not add an explicit one.
 - **Draft review feedback** — prepare concise comments the user can share with
   the author, using finding IDs and file references. Show the draft in the
   conversation; do not post it to GitHub without an explicit request.
+- **Create pending GitHub review** — post the findings to the PR as one
+  pending review with line comments. Only the user can see a pending review.
+  The user edits and submits it in GitHub. Never submit it.
+  - Keep each comment simple and concise: say what the code does, why that is
+    a problem, and ask a question or name a direction. Do not prescribe the
+    fix: no code sketches and no step-by-step changes. A GitHub `suggestion`
+    block is fine for a one-line mechanical fix. Leave out finding IDs and
+    severity labels, because the author has not seen this report. Start a
+    cleanup comment with `Nit:`.
+  - Put one finding in one comment, on lines of the post-change file that are
+    in the PR diff. A finding with no line in the diff, such as one about the
+    PR description, goes in the review body. Otherwise leave the body empty.
+  - GitHub allows one pending review for each user on each PR. Check for one
+    from the user first; if it exists, stop and ask.
+  - Write the request JSON to the scratchpad, never into the repo. Post it
+    with `gh api repos/<owner>/<repo>/pulls/<n>/reviews --method POST --input
+    <file>`, with `commit_id` set to the PR head SHA and no `event` field. The
+    missing `event` keeps the review pending. Give the user the review link.
 - **This is my work: fix findings (plan first)** — picking this counts as the
   user saying the work is theirs, so ownership is now **yours**. Continue as
   for **Fix findings (plan first)**.
